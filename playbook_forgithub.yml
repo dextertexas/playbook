@@ -1,0 +1,44 @@
+- name: "manage db and web servers"
+  hosts: all
+  vars:
+    filecontent: "message from the master machine" #this is a variable  
+  tasks:
+    - name: "create user Johnd"
+      user:
+        name: johnd
+        state: present
+        comment: John Doe
+        uid: 1040
+        group: admin
+    - name: create multiple user using loop
+      user:
+        name: "{{item.name}}"
+        group: "{{item.group}}"
+        state: present
+      loop:
+        - name: "testuser1"
+          group: "admin"
+        - name: "testuser2"
+          group: "admin"
+        - name: "testuser3"
+          group: "admin"
+    - name: "create test_1 file in /tmp directory, owner is johnd, permissions for everyone"
+      file:
+        path: /tmp/test_1
+        state: touch
+        owner: johnd
+        group: admin
+        mode: '0777' # permission starts with a leading 0 for ansible to understand 
+    - name: "create content for test_1 file"
+      copy:
+        content: 'test file from master machine'
+        dest: /tmp/test_1
+    - name: "create test_2 file and copy content from filecontent variable"
+      copy:
+        content: "{{filecontent}}" # the double curly brace is the Jinja2 format"
+        dest: /tmp/test_2
+    - name: "install apache version 2"
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
